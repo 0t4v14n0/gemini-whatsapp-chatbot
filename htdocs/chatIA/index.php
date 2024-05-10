@@ -14,6 +14,22 @@ use GeminiAPI\Resources\Parts\TextPart;
 //inicializando
 $history = [];
 
+//formatar o historico
+function getHistoricoFormatado($telefone, $conn) {
+    $historico_result = buscaMSG($telefone, $conn);
+    $historico_formatado = "";
+  
+    while ($row = $historico_result->fetch_assoc()) {
+      $mensagens = json_decode($row['msg'], true);
+      foreach ($mensagens as $mensagem) {
+        $historico_formatado .= "Usuário: " . $mensagem . "\n";
+      }
+    }
+  
+    return $historico_formatado;
+  }
+
+//busca o historico de msg
 function buscaMSG($telefone, $conn){
     $sql = "SELECT msg FROM historico WHERE telefone = ?";
     $stmt = $conn->prepare($sql);
@@ -101,16 +117,30 @@ if(!$conn){
 
     }
 
-    $historico = buscaMSG($telefone, $conn);
+    $historico = getHistoricoFormatado($telefone, $conn);
     addHistorico($telefone, $msg, $conn);
-    
+  
     $client = new Client("AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0");
-    
-    $response = $client->geminiPro()->generateContent(
-        new TextPart($msg),
-    );
-    
-    echo $response->text();
+
+    // Contexto para o Gemini Pro
+    $texto_contextualizado = $historico . "Usuário: " . $msg . "\nIA: ";
+
+    try {
+        $response = $client->geminiPro()->generateContent(
+          new TextPart($texto_contextualizado)
+        );
+      
+        // Removendo "IA: " da resposta
+        $resposta_final = str_replace("IA: ", "", $response->text());
+      
+        echo $resposta_final;
+      
+        // Adicionando a resposta da IA ao histórico
+        addHistorico($telefone, $resposta_final, $conn);
+      
+      } catch (Exception $e) {
+        die("Erro na chamada da API: " . $e->getMessage());
+      }
 
 }
 
