@@ -87,8 +87,6 @@ function numeroJaExistente($telefone, $conn) {
     return $result->num_rows > 0;
 }
 
-// API KAY : AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0
-
 if(!$conn){
 
     echo("erro conn !");
@@ -120,7 +118,7 @@ if(!$conn){
     $historico = getHistoricoFormatado($telefone, $conn);
     addHistorico($telefone, $msg, $conn);
   
-    $client = new Client("AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0");
+    $client = new Client("SUA API KEY");
 
     // Contexto para o Gemini Pro
     $texto_contextualizado = $historico . "Usuário: " . $msg . "\nIA: ";
