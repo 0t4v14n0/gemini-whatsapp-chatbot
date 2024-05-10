@@ -40,35 +40,35 @@ function buscaMSG($telefone, $conn){
 }
 
 function addHistorico($telefone, $msg, $conn){
-    // Obtém o histórico atual para o número de telefone
+    // Obtem o historico atual para o numero de telefone
     $historico_atual = buscaMSG($telefone, $conn);
     
-    // Se já houver um histórico para o número de telefone
+    // Se ja houver um historico para o numero de telefone
     if ($historico_atual) {
-        // Converte o resultado do banco de dados em um array associativo
+        // cConverte o resultado do banco de dados em um array associativo
         $row = mysqli_fetch_assoc($historico_atual);
         
-        // Recupera o histórico atual como array JSON
+        // recupera o historico atual como array JSON
         $historico_array = json_decode($row['msg'], true);
         
-        // Adiciona a nova mensagem ao histórico
+        // adiciona a nova mensagem ao historico
         $historico_array[] = $msg;
         
-        // Converte o novo histórico de volta para JSON
+        // converte o novo historico de volta para JSON
         $novo_historico = json_encode($historico_array);
         
-        // Atualiza o histórico na tabela
+        // Atualiza o historico na tabela
         $sql = "UPDATE historico SET msg = ? WHERE telefone = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $novo_historico, $telefone);
         $stmt->execute();
         $stmt->close();
     } else {
-        // Se não houver histórico para o número de telefone, cria um novo
+        // Se não houver historico para o nuumero de telefone, cria um novo
         $historico_array = [$msg]; // Cria um array contendo a nova mensagem
         $novo_historico = json_encode($historico_array); // Converte o array para JSON
         
-        // Insere um novo registro com o histórico na tabela
+        // insere um novo registro com o historico na tabela
         $sql = "INSERT INTO historico (telefone, msg) VALUES (?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $telefone, $novo_historico);
@@ -103,14 +103,14 @@ if(!$conn){
     }
     else{
 
-        // Insere o número na tabela do banco de dados usando prepared statement
+        // Insere o numero na tabela do banco de dados usando prepared statement
         $sql = "INSERT INTO historico (telefone) VALUES (?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $telefone);
         if ($stmt->execute()) {
-            //echo "Número de telefone adicionado com sucesso.\n";
+            //echo "numero de telefone adicionado com sucesso.\n";
         } else {
-            //echo "Erro ao adicionar número de telefone: " . $conn->error . "\n";
+            //echo "Erro ao adicionar numero de telefone: " . $conn->error . "\n";
         }
 
     }
@@ -133,7 +133,7 @@ if(!$conn){
       
         echo $resposta_final;
       
-        // Adicionando a resposta da IA ao histórico
+        // Adicionando a resposta da IA ao histurico
         addHistorico($telefone, $resposta_final, $conn);
       
       } catch (Exception $e) {
