@@ -9,7 +9,11 @@ $conn     = new mysqli($servidor, $usuario, $senha, $banco);
 require "vendor/autoload.php";
 
 use GeminiAPI\Client;
+use GeminiAPI\SafetySetting;
+use GeminiAPI\GenerationConfig;
+use GeminiAPI\Enums\HarmCategory;
 use GeminiAPI\Resources\Parts\TextPart;
+use GeminiAPI\Enums\HarmBlockThreshold;
 
 //inicializando
 $history = [];
@@ -21,8 +25,10 @@ function getHistoricoFormatado($telefone, $conn) {
   
     while ($row = $historico_result->fetch_assoc()) {
       $mensagens = json_decode($row['msg'], true);
-      foreach ($mensagens as $mensagem) {
-        $historico_formatado .= "Usuário: " . $mensagem . "\n";
+      if($mensagens != null){
+        foreach ($mensagens as $mensagem) {
+          $historico_formatado .= "Usuário: " . $mensagem . "\n";
+        }
       }
     }
   
@@ -40,35 +46,35 @@ function buscaMSG($telefone, $conn){
 }
 
 function addHistorico($telefone, $msg, $conn){
-    // Obtem o historico atual para o numero de telefone
+    // Obtém o histórico atual para o número de telefone
     $historico_atual = buscaMSG($telefone, $conn);
     
-    // Se ja houver um historico para o numero de telefone
+    // Se já houver um histórico para o número de telefone
     if ($historico_atual) {
-        // cConverte o resultado do banco de dados em um array associativo
+        // Converte o resultado do banco de dados em um array associativo
         $row = mysqli_fetch_assoc($historico_atual);
         
-        // recupera o historico atual como array JSON
+        // Recupera o histórico atual como array JSON
         $historico_array = json_decode($row['msg'], true);
         
-        // adiciona a nova mensagem ao historico
+        // Adiciona a nova mensagem ao histórico
         $historico_array[] = $msg;
         
-        // converte o novo historico de volta para JSON
+        // Converte o novo histórico de volta para JSON
         $novo_historico = json_encode($historico_array);
         
-        // Atualiza o historico na tabela
+        // Atualiza o histórico na tabela
         $sql = "UPDATE historico SET msg = ? WHERE telefone = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $novo_historico, $telefone);
         $stmt->execute();
         $stmt->close();
     } else {
-        // Se não houver historico para o nuumero de telefone, cria um novo
+        // Se não houver histórico para o número de telefone, cria um novo
         $historico_array = [$msg]; // Cria um array contendo a nova mensagem
         $novo_historico = json_encode($historico_array); // Converte o array para JSON
         
-        // insere um novo registro com o historico na tabela
+        // Insere um novo registro com o histórico na tabela
         $sql = "INSERT INTO historico (telefone, msg) VALUES (?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $telefone, $novo_historico);
@@ -87,6 +93,8 @@ function numeroJaExistente($telefone, $conn) {
     return $result->num_rows > 0;
 }
 
+// API KAY : AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0
+
 if(!$conn){
 
     echo("erro conn !");
@@ -103,14 +111,14 @@ if(!$conn){
     }
     else{
 
-        // Insere o numero na tabela do banco de dados usando prepared statement
+        // Insere o número na tabela do banco de dados usando prepared statement
         $sql = "INSERT INTO historico (telefone) VALUES (?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $telefone);
         if ($stmt->execute()) {
-            //echo "numero de telefone adicionado com sucesso.\n";
+            //echo "Número de telefone adicionado com sucesso.\n";
         } else {
-            //echo "Erro ao adicionar numero de telefone: " . $conn->error . "\n";
+            //echo "Erro ao adicionar número de telefone: " . $conn->error . "\n";
         }
 
     }
@@ -118,27 +126,44 @@ if(!$conn){
     $historico = getHistoricoFormatado($telefone, $conn);
     addHistorico($telefone, $msg, $conn);
   
-    $client = new Client("SUA API KEY");
+    $client = new Client("AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0");
+
+    $safetySetting = new SafetySetting(
+      HarmCategory::HARM_CATEGORY_HATE_SPEECH,
+      HarmBlockThreshold::BLOCK_LOW_AND_ABOVE,
+    );
+
+    $generationConfig = (new GenerationConfig())
+        ->withCandidateCount(1)
+        ->withMaxOutputTokens(40)
+        ->withTemperature(0.5)
+        ->withTopK(40)
+        ->withTopP(0.6)
+        ->withStopSequences(['STOP']);
 
     // Contexto para o Gemini Pro
     $texto_contextualizado = $historico . "Usuário: " . $msg . "\nIA: ";
 
     try {
-        $response = $client->geminiPro()->generateContent(
+
+      $response = $client->geminiPro()
+      ->withAddedSafetySetting($safetySetting)
+      ->withGenerationConfig($generationConfig)
+      ->generateContent(
           new TextPart($texto_contextualizado)
-        );
+      );
       
-        // Removendo "IA: " da resposta
-        $resposta_final = str_replace("IA: ", "", $response->text());
+      // Removendo "IA: " da resposta
+      $resposta_final = str_replace("IA: ", "", $response->text());
       
-        echo $resposta_final;
+      echo $resposta_final;
       
-        // Adicionando a resposta da IA ao histurico
-        addHistorico($telefone, $resposta_final, $conn);
+      // Adicionando a resposta da IA ao histórico
+      addHistorico($telefone, $resposta_final, $conn);
       
-      } catch (Exception $e) {
-        die("Erro na chamada da API: " . $e->getMessage());
-      }
+    } catch (Exception $e) {
+      die("Erro na chamada da API: " . $e->getMessage());
+    }
 
 }
 
