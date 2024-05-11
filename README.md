@@ -5,6 +5,7 @@
 <h2>Sumario</h2>
 <ul>
   <li><a href="#des">Descricao</a></li>
+  <li><a href="#func">Funcionalidades</a></li>
   <li><a href="#uso">Como usar</a></li>
   <li>
       <a href="#instalacao">Instalacao</a>
@@ -16,7 +17,7 @@
   <li><a href="#tecnologia">Tecnologias Usadas</a></li>
 </ul>
 
-<h2>🚩Funcionalidades Principais🚩</h2>
+<h2 id = "func">🚩Funcionalidades🚩</h2>
   <li><a>Praticidade</a></li>
   <li><a>Inclusivo</a></li>
   <li><a>Gratuito</a></li>
