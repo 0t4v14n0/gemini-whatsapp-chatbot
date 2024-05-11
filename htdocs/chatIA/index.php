@@ -46,35 +46,35 @@ function buscaMSG($telefone, $conn){
 }
 
 function addHistorico($telefone, $msg, $conn){
-    // Obtém o histórico atual para o número de telefone
+    // Obtém o historico atual para o numero de telefone
     $historico_atual = buscaMSG($telefone, $conn);
     
-    // Se já houver um histórico para o número de telefone
+    // Se já houver um historico para o numero de telefone
     if ($historico_atual) {
         // Converte o resultado do banco de dados em um array associativo
         $row = mysqli_fetch_assoc($historico_atual);
         
-        // Recupera o histórico atual como array JSON
+        // Recupera o historico atual como array JSON
         $historico_array = json_decode($row['msg'], true);
         
-        // Adiciona a nova mensagem ao histórico
+        // Adiciona a nova mensagem ao historico
         $historico_array[] = $msg;
         
-        // Converte o novo histórico de volta para JSON
+        // Converte o novo historico de volta para JSON
         $novo_historico = json_encode($historico_array);
         
-        // Atualiza o histórico na tabela
+        // Atualiza o historico na tabela
         $sql = "UPDATE historico SET msg = ? WHERE telefone = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $novo_historico, $telefone);
         $stmt->execute();
         $stmt->close();
     } else {
-        // Se não houver histórico para o número de telefone, cria um novo
+        // Se não houver historico para o numero de telefone, cria um novo
         $historico_array = [$msg]; // Cria um array contendo a nova mensagem
         $novo_historico = json_encode($historico_array); // Converte o array para JSON
         
-        // Insere um novo registro com o histórico na tabela
+        // Insere um novo registro com o historico na tabela
         $sql = "INSERT INTO historico (telefone, msg) VALUES (?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $telefone, $novo_historico);
@@ -92,8 +92,6 @@ function numeroJaExistente($telefone, $conn) {
     $result = $stmt->get_result();
     return $result->num_rows > 0;
 }
-
-// API KAY : AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0
 
 if(!$conn){
 
@@ -116,7 +114,7 @@ if(!$conn){
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $telefone);
         if ($stmt->execute()) {
-            //echo "Número de telefone adicionado com sucesso.\n";
+            //echo "NUmero de telefone adicionado com sucesso.\n";
         } else {
             //echo "Erro ao adicionar número de telefone: " . $conn->error . "\n";
         }
@@ -126,7 +124,7 @@ if(!$conn){
     $historico = getHistoricoFormatado($telefone, $conn);
     addHistorico($telefone, $msg, $conn);
   
-    $client = new Client("AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0");
+    $client = new Client("SUA API KEY");
 
     $safetySetting = new SafetySetting(
       HarmCategory::HARM_CATEGORY_HATE_SPEECH,
