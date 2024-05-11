@@ -13,10 +13,17 @@ use GeminiAPI\SafetySetting;
 use GeminiAPI\GenerationConfig;
 use GeminiAPI\Enums\HarmCategory;
 use GeminiAPI\Resources\Parts\TextPart;
+use GeminiAPI\Resources\GenerationRequest;
 use GeminiAPI\Enums\HarmBlockThreshold;
 
 //inicializando
 $history = [];
+
+function limparDados($telefone, $conn) {
+  $sql = "UPDATE historico SET msg = NULL WHERE telefone = '$telefone'";
+  $conn->query($sql);
+  $conn->close();
+}
 
 //formatar o historico
 function getHistoricoFormatado($telefone, $conn) {
@@ -46,35 +53,35 @@ function buscaMSG($telefone, $conn){
 }
 
 function addHistorico($telefone, $msg, $conn){
-    // Obtém o historico atual para o numero de telefone
+    // Obtém o histórico atual para o número de telefone
     $historico_atual = buscaMSG($telefone, $conn);
     
-    // Se já houver um historico para o numero de telefone
+    // Se já houver um histórico para o número de telefone
     if ($historico_atual) {
         // Converte o resultado do banco de dados em um array associativo
         $row = mysqli_fetch_assoc($historico_atual);
         
-        // Recupera o historico atual como array JSON
+        // Recupera o histórico atual como array JSON
         $historico_array = json_decode($row['msg'], true);
         
-        // Adiciona a nova mensagem ao historico
+        // Adiciona a nova mensagem ao histórico
         $historico_array[] = $msg;
         
-        // Converte o novo historico de volta para JSON
+        // Converte o novo histórico de volta para JSON
         $novo_historico = json_encode($historico_array);
         
-        // Atualiza o historico na tabela
+        // Atualiza o histórico na tabela
         $sql = "UPDATE historico SET msg = ? WHERE telefone = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $novo_historico, $telefone);
         $stmt->execute();
         $stmt->close();
     } else {
-        // Se não houver historico para o numero de telefone, cria um novo
+        // Se não houver histórico para o número de telefone, cria um novo
         $historico_array = [$msg]; // Cria um array contendo a nova mensagem
         $novo_historico = json_encode($historico_array); // Converte o array para JSON
         
-        // Insere um novo registro com o historico na tabela
+        // Insere um novo registro com o histórico na tabela
         $sql = "INSERT INTO historico (telefone, msg) VALUES (?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $telefone, $novo_historico);
@@ -93,6 +100,8 @@ function numeroJaExistente($telefone, $conn) {
     return $result->num_rows > 0;
 }
 
+// API KAY : AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0
+
 if(!$conn){
 
     echo("erro conn !");
@@ -101,6 +110,14 @@ if(!$conn){
 
     $telefone = $_GET['telefone'];
     $msg = $_GET['msg'];
+
+    //LIMPA O HISTORICO
+    if($msg == "Regenerar" || $msg == "regenerar"){
+
+      limparDados($telefone, $conn);
+      die;
+
+    }
 
     //TESTA CONEC COM O BD
 
@@ -114,7 +131,7 @@ if(!$conn){
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $telefone);
         if ($stmt->execute()) {
-            //echo "NUmero de telefone adicionado com sucesso.\n";
+            //echo "Número de telefone adicionado com sucesso.\n";
         } else {
             //echo "Erro ao adicionar número de telefone: " . $conn->error . "\n";
         }
@@ -124,13 +141,15 @@ if(!$conn){
     $historico = getHistoricoFormatado($telefone, $conn);
     addHistorico($telefone, $msg, $conn);
   
-    $client = new Client("SUA API KEY");
+    $client = new Client("AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0");
 
+    //evitar discurso de odio
     $safetySetting = new SafetySetting(
       HarmCategory::HARM_CATEGORY_HATE_SPEECH,
       HarmBlockThreshold::BLOCK_LOW_AND_ABOVE,
     );
 
+    //configurcoes de geracao
     $generationConfig = (new GenerationConfig())
         ->withCandidateCount(1)
         ->withMaxOutputTokens(40)
@@ -144,9 +163,10 @@ if(!$conn){
 
     try {
 
+      //gera a resposta
       $response = $client->geminiPro()
       ->withAddedSafetySetting($safetySetting)
-      ->withGenerationConfig($generationConfig)
+      //->withGenerationConfig($generationConfig)
       ->generateContent(
           new TextPart($texto_contextualizado)
       );
@@ -154,6 +174,7 @@ if(!$conn){
       // Removendo "IA: " da resposta
       $resposta_final = str_replace("IA: ", "", $response->text());
       
+      //mostra a resposta
       echo $resposta_final;
       
       // Adicionando a resposta da IA ao histórico
