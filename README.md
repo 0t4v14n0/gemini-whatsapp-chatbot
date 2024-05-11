@@ -1,7 +1,8 @@
 <h1>🤖gemini-whatsapp-chatbot🤖</h1>
-<h2 id = "des">Descricao</h2>
+<h2 id = "des">📖Descricao📖</h2>
 <P>Projeto realizado para Imersão Inteligência Artificial 2ª Edição da Alura com Google, Um chatbot que utiliza a API do Gemini para interagir com o WhatsApp, gerando respostas inteligentes e personalizadas. Este projeto explora a integração entre a inteligência artificial do Gemini e a plataforma de mensagens do WhatsApp, proporcionando uma experiência única de interação amigável e fácil de usar, mesmo para aqueles com pouca experiência em tecnologia. </P>
 
+<h2>Sumario</h2>
 <ul>
   <li><a href="#des">Descricao</a></li>
   <li><a href="#uso">Como usar</a></li>
@@ -14,6 +15,13 @@
   </li>
   <li><a href="#tecnologia">Tecnologias Usadas</a></li>
 </ul>
+
+<h2>🚩Funcionalidades Principais🚩</h2>
+  <li><a>Praticidade</a></li>
+  <li><a>Inclusivo</a></li>
+  <li><a>Gratuito</a></li>
+  <li><a>Respostas Rápidas</a></li>
+  
 
 <h2 id = "uso">🤔 Como usar ? 🤔</h2>
 <p>Muito simples de utilizá-lo. Apenas mande perguntas que ele rapidamente responde. Caso queira regenerá-lo, apenas mande no chat "regenerar"  </p>
