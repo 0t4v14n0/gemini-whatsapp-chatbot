@@ -100,7 +100,6 @@ function numeroJaExistente($telefone, $conn) {
     return $result->num_rows > 0;
 }
 
-// API KAY : AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0
 
 if(!$conn){
 
@@ -141,7 +140,7 @@ if(!$conn){
     $historico = getHistoricoFormatado($telefone, $conn);
     addHistorico($telefone, $msg, $conn);
   
-    $client = new Client("AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0");
+    $client = new Client("SUA API");
 
     //evitar discurso de odio
     $safetySetting = new SafetySetting(
