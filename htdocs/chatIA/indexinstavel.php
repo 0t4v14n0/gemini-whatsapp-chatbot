@@ -19,8 +19,8 @@ use GeminiAPI\Enums\HarmBlockThreshold;
 //inicializando
 $history = [];
 $status = 10;
-$apiKey = 'AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0';
-$projectId = 'chatbot-418002';
+$apiKey = 'SUA API';
+$projectId = 'SEU ID';
 
 function cosineSimilarity($embedding1, $embedding2) {
   $dotProduct = 0;
@@ -175,9 +175,6 @@ function numeroJaExistente($telefone, $conn) {
     $result = $stmt->get_result();
     return $result->num_rows > 0;
 }
-
-// API KAY : AIzaSyALZmzCWhNVcEOCZ9Y55plP58tAdA2Jjl0
-// ID DO PROJETO: chatbot-418002
 
 if(!$conn){
 
